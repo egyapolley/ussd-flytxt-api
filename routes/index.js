@@ -5,6 +5,10 @@ const validator = require("../utils/validators");
 const passport = require("passport");
 const BasicStrategy = require("passport-http").BasicStrategy;
 
+const axios = require("axios")
+const moment = require("moment")
+const uuidV4 = require("uuid")
+
 
 const soapRequest = require("easy-soap-request");
 const parser = require('fast-xml-parser');
@@ -105,9 +109,11 @@ router.post("/bundles_ca", passport.authenticate('basic', {
         let jsonObj = parser.parse(body, options);
         if (!jsonObj.Envelope.Body.DATA_RechargesResult) {
              res.json({status: 0, reason:"success"});
+             updateFLYTXT("success",offerId,subscriberNumber,transactionId)
 
         }else {
             res.json({status:1, reason:"System Failure"})
+            updateFLYTXT("error",offerId,subscriberNumber)
         }
 
     } catch (error) {
@@ -143,6 +149,7 @@ router.post("/bundles_ca", passport.authenticate('basic', {
         }
 
         res.json({status:1, reason:faultMessage});
+        updateFLYTXT("error",offerId,subscriberNumber,transactionId)
 
     }
 
@@ -216,6 +223,8 @@ router.post("/bundles_ep", passport.authenticate('basic', {
                 clientTransactionId: transactionId,
             })
 
+            updateFLYTXT("success",offerId,subscriberNumber,transactionId)
+
         }
 
 
@@ -239,13 +248,15 @@ router.post("/bundles_ep", passport.authenticate('basic', {
                     default:
                         faultString = "System Error";
                 }
-                return res.json(
+                res.json(
                     {
                         status: 1,
                         reason: faultString,
                         serviceRequestId: null,
                         clientTransactionId: transactionId
                     })
+
+                updateFLYTXT("error",offerId,subscriberNumber,transactionId)
 
             }
         }
@@ -275,6 +286,50 @@ router.post("/user", async (req, res) => {
 
 
 });
+
+function updateFLYTXT (status, offerId, msisdn,txnId){
+
+    const systemTime =`${moment().format("YYYY-MM-DD HH:mm:ss")} ${moment().format("Z").replace(/:/g,"")}`
+
+    const url = `https://ncs.flytxt.com/rest/authkey/UJrDCgOhtw/msisdn/${msisdn}/kpi/events`
+
+
+    if (status ==='success'){
+        const data = {
+            event: [
+                {
+                    id: "36",
+                    type: "USSD",
+                    value: `${offerId},Reward Activation Success,100,${txnId}`,
+                    date: systemTime
+                }
+            ]
+        }
+
+        axios.post(url,data)
+            .then(response =>console.log(response.data))
+            .catch(error =>console.log(error))
+
+    }else {
+        const data = {
+            event: [
+                {
+                    id: "38",
+                    type: "USSD",
+                    value: `${offerId},Reward Activation Failure,100,${txnId}`,
+                    date: systemTime
+                }
+            ]
+        }
+        axios.post(url,data)
+            .then(response =>console.log(response.data))
+            .catch(error =>console.log(error))
+
+    }
+
+}
+
+
 
 module.exports = router;
 

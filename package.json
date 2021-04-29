@@ -20,9 +20,11 @@
     "he": "^1.2.0",
     "helmet": "^4.5.0",
     "joi": "^17.4.0",
+    "moment": "^2.29.1",
     "mongoose": "^5.12.6",
     "passport": "^0.4.1",
-    "passport-http": "^0.3.0"
+    "passport-http": "^0.3.0",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@types/bcrypt": "^3.0.1",

@@ -17,6 +17,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\testing.js">
+          <value>
+            <Attribute>
+              <option name="separator" value=":" />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\utils\validators.js">
           <value>
             <Attribute>
