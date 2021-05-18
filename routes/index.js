@@ -230,6 +230,7 @@ router.post("/bundles_ep", passport.authenticate('basic', {
 
     } catch (err) {
         let errorBody = err.toString();
+        console.log(errorBody)
         if (parser.validate(errorBody) === true) {
             let jsonObj = parser.parse(errorBody, options);
             if (jsonObj && jsonObj.Envelope && jsonObj.Envelope.Body && jsonObj.Envelope.Body.Fault) {
@@ -256,13 +257,14 @@ router.post("/bundles_ep", passport.authenticate('basic', {
                         clientTransactionId: transactionId
                     })
 
-                updateFLYTXT("error",offerId,subscriberNumber,transactionId)
+
 
             }
-        }
+        }else {
+            res.json({error: "System Failure"})
 
-        console.log(errorBody)
-        res.json({error: "System Failure"})
+        }
+        updateFLYTXT("error",offerId,subscriberNumber,transactionId)
 
     }
 
